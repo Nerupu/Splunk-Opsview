@@ -1,0 +1,12 @@
+---
+- name: Remove password expiry for the opsviewdeploy user
+  command: chage -M -99999 opsviewdeploy
+
+- name: chage list opsviewdeploy
+  command: chage -l opsviewdeploy
+  register: chage_list_opsviewdeploy
+
+- name: Print chage list opsviewdeploy
+  debug:
+    msg: "{{ chage_list_opsviewdeploy.stdout }}"
+  when: chage_list_opsviewdeploy.rc == 0

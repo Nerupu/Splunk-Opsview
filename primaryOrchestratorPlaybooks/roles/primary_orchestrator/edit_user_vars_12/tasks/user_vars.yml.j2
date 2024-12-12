@@ -1,0 +1,57 @@
+---
+_: ~
+opsview_repository_base_url: https://downloads.opsview.com/opsview-commercial/
+opsview_repository_min_version: 6.8.5.202307171558
+#opsview_cname: <CNAME>
+opsview_manage_etc_hosts: {{ opsview.manage_etc_hosts | default(True) }}
+
+opsview_database_backend_nodes:
+  - ip_addr: "{{ rds.hostname }}"
+    name: opsview_database
+
+#opsview_webserver_ssl_cert: {{ opsview.webserver.ssl.cert | default("/path/to/fullchain.pem")}}
+#opsview_webserver_ssl_key: {{ opsview.webserver.ssl.key | default("/path/to/privkey.pem")}}
+
+{% with alias = opsview.timeseries %}
+opsview_timeseries_provider: {{ alias.provider | default("influxdb") }}
+{% endwith %}
+
+{% with alias = opsview.timeseries.influxdb %}
+opsview_timeseries_influxdb_server_url: {{ alias.server_url | default("http://localhost:7086") }}
+opsview_timeseries_influxdb_database: {{ alias.database | default("opsview") }}
+opsview_timeseries_influxdb_retention_policy: {{ alias.retention_policy | default("autogen") }}
+{% endwith %}
+{% with alias = opsview.module %}
+opsview_module_reporting: {{ alias.reporting | default(True) }}
+opsview_module_servicedesk_connector: {{ alias.servicedesk_connector | default(False) }}
+opsview_module_netaudit: {{ alias.netaudit | default(True) }}
+opsview_module_netflow: {{ alias.netflow | default(True) }}
+opsview_module_snmp_traps: {{ alias.snmp_traps | default(True) }}
+{% endwith %}
+
+opsview_manage_mta: {{ opsview.manage_mta | default(True) }}
+ 
+opsview_open_files_limit: {{ opsview.open_files_limit | default(65536) }}
+opsview_loadbalancer_maxconn: {{ opsview.loadbalancer_maxconn | default(30000) }}
+ 
+{% with alias = opsview.component_overrides %}
+ov_component_overrides:
+  opsview_results_sender_config:
+    system_status_update_interval: {{ alias.opsview_results_sender_config.system_status_update_interval | default(30) }}
+  opsview_scheduler_config:
+    system_status_update_interval: {{ alias.opsview_scheduler_config.system_status_update_interval | default(30) }}
+    low_flap_threshold: {{ alias.opsview_scheduler_config.low_flap_threshold | default(100) }}
+    high_flap_threshold: {{ alias.opsview_scheduler_config.high_flap_threshold | default(100) }}
+  opsview_executor_config:
+    system_status_update_interval: {{ alias.opsview_executor_config.system_status_update_interval | default(30) }}
+    execution_timeouts:
+      service_check: {{ alias.opsview_executor_config.execution_timeouts.service_check | default(180) }}
+      host_check: {{ alias.opsview_executor_config.execution_timeouts.host_check | default(180) }}
+      event_handler: {{ alias.opsview_executor_config.execution_timeouts.event_handler | default(180) }}
+      send_notifications: {{ alias.opsview_executor_config.execution_timeouts.send_notifications | default(180) }}
+      instant_command: {{ alias.opsview_executor_config.execution_timeouts.instant_command | default(180) }}
+{% endwith %}
+opsview_core_web_local_overrides:
+  Controller::Root:
+    login_throttling:
+      ip_limit: {{ opsview.core_web_local_overrides.login_throttling.ip_limit | default(5)}}

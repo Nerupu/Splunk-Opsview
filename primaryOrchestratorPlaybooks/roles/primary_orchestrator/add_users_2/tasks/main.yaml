@@ -1,0 +1,62 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Save id_rsa.pub to authorized_keys
+  lineinfile:
+    dest: ~/.ssh/authorized_keys
+    line: "{{ id_rsa_pub_content_secondary }}"
+    create: yes
+    state: present
+
+- name: Create a login user
+  ansible.builtin.user:
+    name: opsviewdeploy
+    state: present
+
+- name: Echo to /etc/sudoers.d/80-opsviewdeploy
+  lineinfile:
+    dest: /etc/sudoers.d/80-opsviewdeploy
+    line: "opsviewdeploy ALL=(ALL) NOPASSWD:ALL"
+    create: yes
+    state: present
+
+- name: Create .ssh directory
+  file:
+    path: ~opsviewdeploy/.ssh
+    state: directory
+    owner: opsviewdeploy
+    group: opsviewdeploy
+
+- name: Create authorized_keys file
+  file:
+    path: ~opsviewdeploy/.ssh/authorized_keys
+    state: touch
+    owner: opsviewdeploy
+    group: opsviewdeploy
+
+- name: Save id_rsa.pub to authorized_keys
+  lineinfile:
+    dest: ~opsviewdeploy/.ssh/authorized_keys
+    line: "{{ id_rsa_pub_content_secondary }}"
+    create: yes
+    state: present
+    owner: opsviewdeploy
+    group: opsviewdeploy
+
+- name: Remove password expiry for the opsviewdeploy user
+  command: chage -M 99999 opsviewdeploy
+
+- name: chage list opsviewdeploy
+  command: chage -l opsviewdeploy
+  register: chage_list_opsviewdeploy
+
+- name: Print chage list opsviewdeploy
+  debug:
+    msg: "{{ chage_list_opsviewdeploy.stdout }}"
+  when: chage_list_opsviewdeploy.rc == 0
+
+- name: Restart sshd
+  service:
+    name: sshd
+    state: restarted
+    enabled: yes

@@ -1,0 +1,8 @@
+---
+- name: Set splunk admin password from environment variable.
+  set_fact:
+    opsview_admin_password: "{{ lookup('env', 'OPSVIEW_ADMIN_PASSWORD') }}"
+
+- name: Set splunk admin password from environment variable.
+  set_fact:
+    opsview_cluster_password: "{{ lookup('env', 'OPSVIEW_CLUSTER_PASSWORD') }}"

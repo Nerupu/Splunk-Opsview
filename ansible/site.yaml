@@ -1,0 +1,95 @@
+---
+- import_playbook: setSecrets.yaml
+- import_playbook: getIDs.yaml
+- import_playbook: renameInstances.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/sshKeyGen.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/sshKeyGen.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/addUsers.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/addUsers.yaml
+
+# - import_playbook: primaryInfluxPlaybooks/downloadPackages.yaml
+# - import_playbook: secondaryInfluxPlaybooks/downloadPackages.yaml
+
+# - import_playbook: primaryInfluxPlaybooks/startDatabase.yaml
+# - import_playbook: secondaryInfluxPlaybooks/startDatabase.yaml
+
+# - import_playbook: primaryInfluxPlaybooks/createDatabase.yaml
+# - import_playbook: secondaryInfluxPlaybooks/createDatabase.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/downloadDeploy.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/downloadDeploy.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/getPrimaryHostname.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/getSecondaryHostname.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/editOpsviewDeploy.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/editOpsviewDeploy.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/editUserVars.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/editUserSecret.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/addNames.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/setupHosts.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/copyDeployAndVar.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/saveDeployAndVar.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/setupHosts.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/copyMachineRef.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/saveMachineRef.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/setupInfrastructure.yaml
+
+# - import_playbook: primaryInfluxPlaybooks/getPrimaryHostname.yaml
+# - import_playbook: secondaryInfluxPlaybooks/getSecondaryHostname.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/loadbalancerAdjust.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/loadbalancerConfig.yaml
+
+# - import_playbook: secondaryOrchestratorPlaybooks/editOpsviewDeployV2.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/setupInfrastructure.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/loadbalancerAdjust.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/loadbalancerConfig.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/editOpsviewDeployV2.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/editOpsviewDeployV3.yaml
+
+### working till that point
+# - import_playbook: primaryOrchestratorPlaybooks/setupOpsview.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/opsviewWatchdog.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/opsviewContrab.yaml
+
+# - import_playbook: secondaryOrchestratorPlaybooks/saveSshFiles.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/opsviewWatchdog.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/setupDatastoreManage.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/editUserVarsV2.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/setupDatastoreManage.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/setupContrab.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/createAutorecovery.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/createAutorecovery.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/scriptCrontab.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/scriptCrontab.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/createSync.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/createSync.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/scriptCrontabDrnodes.yaml
+# - import_playbook: secondaryOrchestratorPlaybooks/saveRootContrab.yaml
+
+# - import_playbook: primaryOrchestratorPlaybooks/createGetDRdata.yaml
+# - import_playbook: primaryOrchestratorPlaybooks/setupMonitoring.yaml
+# next steps need to be done in UI
+
+
+
+
+
+
+
+
+
+
+

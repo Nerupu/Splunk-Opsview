@@ -1,0 +1,65 @@
+all:
+  vars:
+    instance:
+      python_interpreter: /bin/python3
+    bucket:
+      files: eaf-stream3-files-bucket
+    orchestartor:
+      primary:
+        hostname: mock
+      secondary:
+        hostname: mock
+    mocked_rabbit_hostname: mock
+    rds:
+      username: "opsview"
+      hostname: "terraform-20230926132314822000000007.cgto9ljk5897.eu-west-2.rds.amazonaws.com"
+    opsview:
+      database:
+        default:
+          username: "root"
+          password: "r%q[HB3%B&x8OjarMl0hnYEQrL34"
+        core:
+          username: "root"
+          password: "r%q[HB3%B&x8OjarMl0hnYEQrL34"
+        reporting:
+          username: "root"
+          password: "r%q[HB3%B&x8OjarMl0hnYEQrL34"
+      manage_etc_hosts: True
+      webserver:
+        ssl: 
+          cert: "/path/to/fullchain.pem"
+          key: "/path/to/privkey.pem"
+      timeseries:
+        provider: "influxdb"
+        influxdb:
+          server_url: "http://localhost:7086"
+          database: "opsview"
+          retention_policy: "autogen"
+      module:
+        reporting: True
+        servicedesk_connector: False
+        netaudit: True
+        netflow: True
+        snmp_traps: True
+      manage_mta: False
+      open_files_limit: 65536
+      loadbalancer_maxconn: 30000
+      component_overrides:
+        opsview_results_sender_config:
+          system_status_update_interval: 30
+        opsview_scheduler_config:
+          system_status_update_interval: 30
+          low_flap_threshold: 100
+          high_flap_threshold: 100
+        opsview_executor_config:
+          system_status_update_interval: 30
+          execution_timeouts:
+            service_check: 180
+            host_check: 180
+            event_handler: 180
+            send_notifications: 180
+            instant_command: 180
+      core_web_local_overrides:
+        login_throttling:
+          ip_limit: 5
+      

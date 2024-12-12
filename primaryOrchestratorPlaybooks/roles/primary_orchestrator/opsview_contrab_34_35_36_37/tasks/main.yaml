@@ -1,0 +1,40 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Save the opsview user crontab to file
+  shell: |
+    crontab -l -u opsview > /opt/opsview/coreutils/etc/opsview.crontab
+    chgrp opsview /opt/opsview/coreutils/etc/opsview.crontab
+    chmod g+r /opt/opsview/coreutils/etc/opsview.crontab
+
+- name: Create the opsview user DR crontab and correct the permissions
+  shell: |
+    cat >> /opt/opsview/coreutils/etc/opsview.crontab.dr <<EOF
+    # OPSVIEW-SETUP-START
+    # Do not remove comment above. Everything between OPSVIEW-SETUP-START and OPSVIEW-SETUP-END
+    # will be automatically installed as part of an Opsview install/upgrade
+    0 23 * * * /opt/opsview/bin/backup_configs >/dev/null 2>&1
+    # OPSVIEW-SETUP-END
+    # OPSVIEW-DATASTORE-START
+    # Do not remove comment above. Everything between OPSVIEW-DATASTORE-START and OPSVIEW-DATASTORE-END
+    # will be automatically installed as part of an Opsview Datastore.
+    # Checks if CouchDB is running and only runs the compaction script if it is.
+    38 * * * * pgrep -f "progname couchdb" >/dev/null && /opt/opsview/datastore/bin/compact.exp >/dev/null 2>&1
+    # OPSVIEW-DATASTORE-END
+    EOF
+    chgrp opsview /opt/opsview/coreutils/etc/opsview.crontab.dr
+    chmod g+r /opt/opsview/coreutils/etc/opsview.crontab.dr
+
+- name: Install the opsview user DR crontab
+  shell: |
+    crontab -u opsview /opt/opsview/coreutils/etc/opsview.crontab.dr
+
+- name: Find files in /opt/opsview/coreutils/etc/opsview.crontab*
+  find:
+    paths: /opt/opsview/coreutils/etc/
+    patterns: 'opsview.crontab*'
+  register: find_files
+
+- name: Save files into separate variables
+  set_fact:
+    find_files_content: "{{ find_files.files | map(attribute='path') | map('extract', find_files) | map('extract', 'content') | list }}"

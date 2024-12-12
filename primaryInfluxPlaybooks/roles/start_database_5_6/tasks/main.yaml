@@ -1,0 +1,28 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+  
+- name: Replace influxdb-relay.conf
+  template:
+    src: influxdb-relay.conf.j2
+    dest: /etc/influxdb-relay/influxdb-relay.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Start influxdb-relay
+  service:
+    name: influxdb-relay
+    state: started
+    enabled: yes
+
+- name: Start influxdb
+  service:
+    name: influxdb
+    state: started
+    enabled: yes
+
+- name: Install influxdb python library
+  pip:
+    name: influxdb
+    state: present
+    executable: pip3

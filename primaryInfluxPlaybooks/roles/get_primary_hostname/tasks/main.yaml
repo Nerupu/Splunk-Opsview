@@ -1,0 +1,9 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Save hostname of primary influx to variable
+  command: hostname
+  register: priamry_influx_hostname
+
+- name: Save hostname of primary orchestrator to variable 
+  set_fact: priamry_influx_hostname="{{ priamry_influx_hostname.stdout }}"

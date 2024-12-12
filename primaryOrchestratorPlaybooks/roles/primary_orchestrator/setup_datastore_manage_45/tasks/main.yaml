@@ -1,0 +1,5 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Configure datastore replication  
+  command: /opt/opsview/deploy/bin/opsview-deploy /opt/opsview/deploy/lib/playbooks/datastore-manage-replication-docs.yml

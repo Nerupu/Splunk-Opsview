@@ -1,0 +1,51 @@
+---
+- name: Display the JSON file content
+  shell: cat terraform.tfstate
+  register: result
+
+- name: Save the Json data to a Variable as a Fact
+  set_fact:
+    jsondata: "{{ result.stdout | from_json }}"
+
+- name: Create list of servers
+  set_fact:
+    server_list: "{{ jsondata | json_query(jmesquery) }}"
+  vars:
+    jmesquery: 'outputs.instances_list.value'
+
+
+- name: Create list of all servers
+  set_fact:
+    all_list: "{{ all_list|default([]) + [ {'id': item.instance_id, 'dns': item.private_dns} ] }}"
+  loop: "{{ server_list }}"
+
+- name: Create primary orchestrator list
+  set_fact:
+    prim_orch: "{{ prim_orch|default([]) + [ {'id': item.instance_id, 'dns': item.private_dns, 'ip': item.private_ip} ] }}"
+  loop: "{{ server_list }}"
+  when: item.type == "PrimaryOrchestrator"
+
+- name: Create secondary orchestrator list
+  set_fact:
+    sec_orch: "{{ sec_orch|default([]) + [ {'id': item.instance_id, 'dns': item.private_dns, 'ip': item.private_ip} ] }}"
+  loop: "{{ server_list }}"
+  when: item.type == "SecondaryOrchestrator"
+
+- name: Create primary influxdb list
+  set_fact:
+    prim_influx: "{{ prim_influx|default([]) + [ {'id': item.instance_id, 'dns': item.private_dns, 'ip': item.private_ip} ] }}"
+  loop: "{{ server_list }}"
+  when: item.type == "PrimaryInfluxDatabase"
+
+- name: Create secondary influxdb list
+  set_fact:
+    sec_influx: "{{ sec_influx|default([]) + [ {'id': item.instance_id, 'dns': item.private_dns, 'ip': item.private_ip} ] }}"
+  loop: "{{ server_list }}"
+  when: item.type == "SecondaryInfluxDatabase"
+
+- name: Create sshproxy list
+  set_fact:
+    sshproxy: "{{ sshproxy1|default([]) + [ {'id': item.instance_id, 'dns': item.private_dns, 'ip': item.private_ip} ] }}"
+  loop: "{{ server_list }}"
+  when: item.type == "SteppingStone"
+

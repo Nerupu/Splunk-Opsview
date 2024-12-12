@@ -1,0 +1,59 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Create /opt/opsview/agent/plugins/nrpe_local/get_dr_data with get_dr_data.j2
+  template:
+    src: get_dr_data.j2
+    dest: /opt/opsview/agent/plugins/nrpe_local/get_dr_data
+    owner: root
+    group: opsview
+    mode: '0655'
+
+# echo 'command[get_dr_data]=/opt/opsview/agent/plugins/nrpe_local/get_dr_data $ARG1$' >> /opt/opsview/agent/etc/nrpe_local/override.cfg
+# chown root:opsview /opt/opsview/agent/plugins/nrpe_local/get_dr_data /opt/opsview/agent/etc/nrpe_local/override.cfg
+# chmod 0750 /opt/opsview/agent/plugins/nrpe_local/get_dr_data /opt/opsview/agent/etc/nrpe_local/override.cfg
+
+- name: Shell echo command
+  shell: echo 'command[get_dr_data]=/opt/opsview/agent/plugins/nrpe_local/get_dr_data $ARG1$' >> /opt/opsview/agent/etc/nrpe_local/override.cfg
+
+- name: Change owner of /opt/opsview/agent/plugins/nrpe_local/get_dr_data 
+  file:
+    path: /opt/opsview/agent/plugins/nrpe_local/get_dr_data
+    owner: root
+    group: opsview
+    mode: '0750'
+
+- name: Change owener of /opt/opsview/agent/etc/nrpe_local/override.cfg
+  file:
+    path: /opt/opsview/agent/etc/nrpe_local/override.cfg
+    owner: root
+    group: opsview
+    mode: '0750'
+
+# 58: On the PRIMARY orchestrator synchronise the configuration to the SECONDARY
+#   rsync -avh /opt/opsview/agent/plugins/nrpe_local/get_dr_data  ORCHSEC:/opt/opsview/agent/plugins/nrpe_local/
+#   rsync -avh /opt/opsview/agent/etc/nrpe_local/override.cfg ORCHSEC:/opt/opsview/agent/etc/nrpe_local/
+
+- name: Synchronise plugins
+  synchronize:
+    src: /opt/opsview/agent/plugins/nrpe_local/get_dr_data
+    dest: root@{{ sec_orch[0].ip }}:/opt/opsview/agent/plugins/nrpe_local/
+    mode: push
+    rsync_opts:
+      - "--archive"
+      - "--verbose"
+      - "--compress"
+      - "--partial"
+      - "--progress"
+
+- name: Synchronise plugins
+  synchronize:
+    src: /opt/opsview/agent/etc/nrpe_local/override.cfg
+    dest: root@{{ sec_orch[0].ip }}:/opt/opsview/agent/etc/nrpe_local/
+    mode: push
+    rsync_opts:
+      - "--archive"
+      - "--verbose"
+      - "--compress"
+      - "--partial"
+      - "--progress"

@@ -1,0 +1,30 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Modify the opsview-watchdog main configuration
+  lineinfile:
+    dest: /opt/opsview/watchdog/etc/monitrc
+    regexp: 'statefile'
+    line: 'set onreboot laststate'
+    create: yes
+    state: present
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Modify the opsview-watchdog services configuration
+  shell: |
+    ls -l /opt/opsview/watchdog/etc/services | \
+    egrep -v 'total|agent|cachemanager|datastore|loadbalancer|messagequeue|watchdog' | \
+    awk '{print $9}' | while read config ; do \
+    sed -i '/pidfile/a\    onreboot nostart' /opt/opsview/watchdog/etc/services/$config ; done
+
+- name: Reload the opsview-watchdog configuration
+  command: /opt/opsview/watchdog/bin/opsview-monit reload
+
+- name: Stop specific opsview components
+  shell: |
+    ls -l  /opt/opsview/watchdog/etc/services/ \
+    | egrep -v 'total|agent|cachemanager|datastore|loadbalancer|messagequeue|watchdog' | \
+    awk '{print $9}' | while read component ; do \
+    /opt/opsview/watchdog/bin/opsview-monit stop ${component::-5} ; done

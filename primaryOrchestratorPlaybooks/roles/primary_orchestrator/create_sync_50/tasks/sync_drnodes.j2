@@ -1,0 +1,91 @@
+
+#!/bin/bash
+
+# Hostnames as per the 'hostname' command
+nodes=( "{{primary_orch_hostname}}" "{{secondary_orch_hostname}}" )
+
+# User that has ssh and sudo access on the remote host
+username=opsviewdeploy
+{% raw %} 
+## Since this is run on reboot, wait a bit to allow services to start 
+sleep 60
+
+for remote_node in "${nodes[@]}"; do
+
+  if [[ "$remote_node" == "$(hostname)" ]]; then
+    continue
+  fi
+
+  node=$remote_node
+done
+  
+# Web Application
+rsync -ahv --rsync-path="sudo rsync" /opt/opsview/webapp/etc/* $username@$node:/opt/opsview/webapp/etc/
+  
+# Monitoring Scripts
+rsync -ahv --rsync-path="sudo rsync" /opt/opsview/monitoringscripts/etc/* $username@$node:/opt/opsview/monitoringscripts/etc
+if [ "$(ls -A /opt/opsview/monitoringscripts/eventhandlers)" ]; then
+    rsync -ahv --rsync-path="sudo rsync" /opt/opsview/monitoringscripts/eventhandlers/* $username@$node:/opt/opsview/monitoringscripts/eventhandlers
+fi
+rsync -ahv --rsync-path="sudo rsync" /opt/opsview/monitoringscripts/notifications/* $username@$node:/opt/opsview/monitoringscripts/notifications
+rsync -ahv --rsync-path="sudo rsync" /opt/opsview/monitoringscripts/plugins/* $username@$node:/opt/opsview/monitoringscripts/plugins
+ 
+# Self-Monitoring
+rsync -avh --rsync-path="sudo rsync" /opt/opsview/monitoringscripts/etc/plugins/self-monitoring/* $username@$node:/opt/opsview/monitoringscripts/etc/plugins/self-monitoring/
+ 
+# Timeseries Metadata
+rsync -ahv --rsync-path="sudo rsync" /opt/opsview/timeseriesinfluxdb/var/data/* $username@$node:/opt/opsview/timeseriesinfluxdb/var/data/
+ 
+# SSH Tunnels
+rsync -ahv --rsync-path="sudo rsync" /opt/opsview/sshtunnels/etc/sshtunnels.yaml $username@$node:/opt/opsview/sshtunnels/etc/
+ 
+# Collection plan
+rsync -ahv --rsync-path="sudo rsync" /opt/opsview/scheduler/var/collection_plan.json $username@$node:/opt/opsview/scheduler/var/
+ 
+# ServiceDesk Connector
+if [ -d /opt/opsview/servicedeskconnector/etc/config.d ]; then
+    if [ "$(ls -A /opt/opsview/servicedeskconnector/etc/config.d)" ]; then
+        rsync -ahv --rsync-path="sudo rsync" /opt/opsview/servicedeskconnector/etc/config.d/* $username@$node:/opt/opsview/servicedeskconnector/etc/config.d/
+    fi
+fi
+if [ -d /opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Output ]; then
+    if [ "$(ls -A /opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Output)" ]; then
+        rsync -ahv --rsync-path="sudo rsync" /opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Output/* $username@$node:/opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Output/
+    fi
+fi
+if [ -d /opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Input ]; then
+    if [ "$(ls -A /opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Input)" ]; then
+        rsync -ahv --rsync-path="sudo rsync" /opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Input/* $username@$node:/opt/opsview/servicedeskconnector/lib/Opsview/Notifications/Input/
+    fi
+fi
+  
+# NetFlow Data
+if [ -d /opt/opsview/flowcollector/var/data ]; then
+    if [ "$(ls -A /opt/opsview/flowcollector/var/data)" ]; then
+        rsync -ahv --rsync-path="sudo rsync" /opt/opsview/flowcollector/var/data/* $username@$node:/opt/opsview/flowcollector/var/data/
+    fi
+fi
+   
+# NetFlow Stats
+if [ -d /opt/opsview/flowcollector/var/stats ]; then
+    if [ "$(ls -A /opt/opsview/flowcollector/var/stats)" ]; then
+        rsync -ahv --rsync-path="sudo rsync" /opt/opsview/flowcollector/var/stats/* $username@$node:/opt/opsview/flowcollector/var/stats/
+    fi
+fi
+   
+# NetAudit
+if [ -d /opt/opsview/netaudit/var ]; then
+    if [ "$(ls -A /opt/opsview/netaudit/var)" ]; then
+        rsync -ahv --rsync-path="sudo rsync" /opt/opsview/netaudit/var/* $username@$node:/opt/opsview/netaudit/var/
+    fi
+fi
+   
+# SNMP MIB's
+if [ -d /opt/opsview/snmptraps/var/load ]; then
+    if [ "$(ls -A /opt/opsview/snmptraps/var/load)" ]; then
+        rsync -ahv --rsync-path="sudo rsync" /opt/opsview/snmptraps/var/load/* $username@$node:/opt/opsview/snmptraps/var/load/
+    fi
+fi
+   
+touch /opt/opsview/coreutils/var/dr.sync
+{% endraw %} 

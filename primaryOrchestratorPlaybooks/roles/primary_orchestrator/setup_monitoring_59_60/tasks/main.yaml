@@ -1,0 +1,24 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+# 59: On both the PRIMARY and the SECONDARY orchestrator restart the opsview-agent and ensure the nrpe process is running
+#   systemctl stop opsview-agent ; sleep 5 ; systemctl start opsview-agent
+#   systemctl status opsview-agent
+#   ps -ef|grep nrpe
+
+- name: Restart opsview-agent
+  shell: systemctl stop opsview-agent ; sleep 5 ; systemctl start opsview-agent
+  register: restart_opsview_agent
+  until: restart_opsview_agent.stdout.find('active (running)') != -1
+  retries: 10
+  delay: 5
+
+- name: Check nrpe process is running
+  shell: ps -ef|grep nrpe
+  register: nrpe_process
+  until: nrpe_process.stdout.find('nrpe') != -1
+  retries: 10
+  delay: 5
+
+- name: Run opsview-deploy
+  command: /opt/opsview/deploy/bin/opsview-deploy /opt/opsview/deploy/lib/playbooks/setup-monitoring.yml

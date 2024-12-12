@@ -1,0 +1,111 @@
+{% raw %} 
+#!/usr/bin/perl
+ 
+use warnings;
+use strict;
+use lib "/opt/opsview/perl/lib/perl5";
+ 
+use Data::Dumper;
+use IO::Socket::UNIX;
+use JSON;
+use MIME::Base64;
+use Monitoring::Plugin;
+use XML::Simple;
+ 
+my $hostname       = `hostname`;
+ 
+my $WATCHDOG_SOCKET         = '/opt/opsview/watchdog/run/monit.socket';
+my $NO_SERVICES_PASSIVE     = 6;
+my @PASSIVE_SERVICES        = ('opsview-watchdog', 'opsview-messagequeue', 'opsview-loadbalancer', 'opsview-datastore', 'opsview-agent', $hostname);
+my $OPSVIEW_ACTIVE_CRONTAB  = '/opt/opsview/coreutils/etc/opsview.crontab';
+my $OPSVIEW_PASSIVE_CRONTAB = '/opt/opsview/coreutils/etc/opsview.crontab.dr';
+ 
+my $data     = convert_xml_to_json(get_watchdog_status());
+my $services = $data->{'monit'}->{'service'};
+ 
+my $no_services         = 0;
+my $no_services_running = 0;
+my @services_running    = ();
+my @services_stopped    = ();
+ 
+foreach my $key ( keys %$services ) {
+     ++$no_services;
+     if ( $data->{'monit'}->{'service'}->{$key}->{'monitor'} == 1 ) {
+         ++$no_services_running;
+         push(@services_running, $key);
+     }
+     else {
+         push(@services_stopped, $key);
+     }
+}
+ 
+my $current_ct_jobs_no      = get_current_crontab_jobs_no();
+my $ct_active_node_jobs_no  = get_crontab_jobs_no($OPSVIEW_ACTIVE_CRONTAB);
+my $ct_passive_node_jobs_no = get_crontab_jobs_no($OPSVIEW_PASSIVE_CRONTAB);
+ 
+my %output = (
+    'current_ct_jobs_no'        =>  $current_ct_jobs_no,
+    'ct_active_node_jobs_no'    =>  $ct_active_node_jobs_no,
+    'ct_passive_node_jobs_no'   =>  $ct_passive_node_jobs_no,
+    'no_services'               =>  $no_services,
+    'no_services_running'       =>  $no_services_running,
+    'services_running'          =>  join(",", @services_running),
+    'services_stopped'          =>  join(",", @services_stopped),
+    'hostname'          =>  $hostname
+);
+my $json = encode_json \%output;
+ 
+print "$json";
+ 
+sub get_watchdog_status {
+    my $response;
+    my $socket = IO::Socket::UNIX->new(
+        Type => SOCK_STREAM(),
+        Peer => $WATCHDOG_SOCKET,
+    ) or die("Can't connect to server: $!\n");
+ 
+    $socket->autoflush(1);
+ 
+    print ($socket "GET /_status?format=xml HTTP/1.0\r\n");
+    while (my $line = <$socket>) {
+        if ($line){
+            chomp($line);
+            $response = $line;
+        }
+    }
+    return $response;
+}
+ 
+sub convert_xml_to_json {
+    my ($xml) = @_;
+    my $xs = XML::Simple->new(KeepRoot => 1);
+    my $ref = $xs->XMLin($xml);
+    my $json = encode_json($ref);
+    my $json_decoded = decode_json($json);
+    return $json_decoded;
+}
+ 
+sub get_current_crontab_jobs_no {
+    my $no_active_cronjobs = 0;
+    my @ct = `crontab -l`;
+    for my $line (@ct) {
+        if ( $line !~ m/#/ ) {
+            ++$no_active_cronjobs;
+        }
+    }
+    return $no_active_cronjobs;
+}
+ 
+sub get_crontab_jobs_no {
+    my ($file) = @_;
+    my $no_active_cronjobs = 0;
+    open(my $fh, "<", $file) or die "cannot open input text!";
+    my @ct = <$fh>;
+    for my $line (@ct) {
+        if ( $line !~ m/#/ ) {
+            ++$no_active_cronjobs;
+        }
+    }
+    return $no_active_cronjobs;
+}
+{% endraw %} 

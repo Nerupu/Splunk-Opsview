@@ -1,0 +1,71 @@
+#opsview_cname: <CNAME>
+opsview_manage_etc_hosts: {{ opsview.manage_etc_hosts | default(True) }}
+
+opsview_database_backend_nodes:
+  - ip_addr: "{{ rds.hostname }}"
+    name: opsview_database
+
+#opsview_webserver_ssl_cert: {{ opsview.webserver.ssl.cert | default("/path/to/fullchain.pem")}}
+#opsview_webserver_ssl_key: {{ opsview.webserver.ssl.key | default("/path/to/privkey.pem")}}
+
+{{ % with opsview.timeseries as timeseries % }}
+opsview_timeseries_provider: {{ timeseries.provider | default("influxdb") }}
+{{ % endwith % }}
+{{ % with opsview.timeseries.influxdb as influxdb % }}
+opsview_timeseries_influxdb_server_url: {{ influxdb.server_url | default("http://localhost:7086") }}
+opsview_timeseries_influxdb_database: {{ influxdb.database | default("opsview") }}
+opsview_timeseries_influxdb_retention_policy: {{influxdb.retention_policy | default("autogen") }}
+{{ % endwith % }}
+{{ % with opsview.module as module % }}
+opsview_module_reporting: {{ module.reporting | default(True) }}
+opsview_module_servicedesk_connector: {{ module.servicedesk_connector | default(False) }}
+opsview_module_netaudit: {{ module.netaudit | default(True) }}
+opsview_module_netflow: {{ module.netflow | default(True) }}
+opsview_module_snmp_traps: {{ module.snmp_traps | default(True) }}
+{{ % endwith % }}
+
+opsview_manage_mta: {{ opsview.manage_mta | default(True) }}
+ 
+opsview_open_files_limit: {{ opsview.open_files_limit | default(65536) }}
+opsview_loadbalancer_maxconn: {{ opsview.loadbalancer_maxconn | default(30000) }}
+ 
+{{ % with opsview.component_overrides as component_overrides % }}
+ov_component_overrides:
+  opsview_results_sender_config:
+    system_status_update_interval: {{ component_overrides.opsview_results_sender_config.system_status_update_interval | default(30) }}
+  opsview_scheduler_config:
+    system_status_update_interval: {{ component_overrides.opsview_scheduler_config.system_status_update_interval | default(30) }}
+    low_flap_threshold: {{ component_overrides.opsview_scheduler_config.low_flap_threshold | default(100) }}
+    high_flap_threshold: {{ opsview.component_overrides.opsview_scheduler_config.high_flap_threshold | default(100) }}
+  opsview_executor_config:
+    system_status_update_interval: {{ component_overrides.opsview_executor_config.system_status_update_interval | default(30) }}
+    execution_timeouts:
+      service_check: {{ component_overrides.opsview_executor_config.execution_timeouts.service_check | default(180) }}
+      host_check: {{ component_overrides.opsview_executor_config.execution_timeouts.host_check | default(180) }}
+      event_handler: {{ component_overrides.opsview_executor_config.execution_timeouts.event_handler | default(180) }}
+      send_notifications: {{ component_overrides.opsview_executor_config.execution_timeouts.send_notifications | default(180) }}
+      instant_command: {{ component_overrides.opsview_executor_config.execution_timeouts.instant_command | default(180) }}
+{{ % endwith % }}
+opsview_core_web_local_overrides:
+  Controller::Root:
+    login_throttling:
+      ip_limit: {{ opsview.core_web_local_overrides.login_throttling.ip_limit | default(5) }}
+{% raw %} opsview_datastore_replication_documents: >-
+  {%- set replication_docs = [] -%}
+  {%- for host in groups["opsview_datastore"] if host != inventory_hostname -%}
+  {%-     for db in opsview_datastore_create_databases -%}
+  {%-         set _ = replication_docs.append({
+                'id': 'repl.' + db + '.' + host,
+                'database': '_replicator',
+                'body': {
+                  'continuous': True,
+                  'create_target': True,
+                  'source': 'https://' + opsview_datastore_username + ':' + opsview_datastore_password + '@' + opsview_host_fqdn + ':15985/' + db,
+                  'target': 'https://' + opsview_datastore_username + ':' + opsview_datastore_password + '@' + hostvars[host].opsview_host_fqdn + ':15985/' + db,
+                }
+ 
+  }) -%}
+  {%-     endfor -%}
+  {%- endfor -%}
+  {{- replication_docs -}} {% endraw %}
+  

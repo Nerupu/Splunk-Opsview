@@ -1,0 +1,11 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Read /opt/opsview/var/machine.ref file
+  command: cat /opt/opsview/var/machine.ref
+  register: machine_ref_output
+
+- name: Save /opt/opsview/var/machine.ref into variable machine_ref_content
+  set_fact:
+    machine_ref_content: "{{ machine_ref_output.stdout }}"
+

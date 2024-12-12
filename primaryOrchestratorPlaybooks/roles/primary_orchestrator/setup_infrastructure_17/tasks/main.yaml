@@ -1,0 +1,14 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Run opsview-deploy
+  command: /opt/opsview/deploy/bin/opsview-deploy /opt/opsview/deploy/lib/playbooks/setup-infrastructure.yml
+
+- name: Restart opsview-datastore when setup-infrastructure.yml playbook fails
+  command: /opt/opsview/watchdog/bin/opsview-monit restart opsview-datastore
+  when: setup_infrastructure_output.rc != 0
+  register: restart_opsview_datastore_output
+
+- name: Rerun opsview-deploy after restart
+  command: /opt/opsview/deploy/bin/opsview-deploy /opt/opsview/deploy/lib/playbooks/setup-infrastructure.yml
+  when: restart_opsview_datastore_output.rc = 0

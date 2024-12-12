@@ -1,0 +1,19 @@
+frontend datastore-balance
+    bind 127.0.0.1:15984
+    option tcplog
+    option clitcpka
+    timeout client 3h
+    mode tcp
+    default_backend datastore-balance
+
+backend datastore-balance
+    mode tcp
+    balance leastconn
+    timeout server 3h
+    stick store-request src
+    stick-table type ip size 256k expire 30m
+    option tcplog
+    option srvtcpka
+    option httpchk GET /_up
+    http-check disable-on-404
+    server {{ primary_orch_hostname }} 127.0.0.1:15985 check check-ssl inter 12000 rise 2 fall 2 ssl ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:!aNULL:!MD5:!DSS crt /opt/opsview/etc/ssl/opsview@{{ prim_orch[0].dns }}.pem ca-file /opt/opsview/etc/ssl/ca.pem verify required

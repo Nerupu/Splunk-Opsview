@@ -1,0 +1,14 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Create /opt/opsview/loadbalancer/etc/datastore-balance.cfg
+  template:
+    src: datastore-balance.cfg.j2
+    dest:  /opt/opsview/loadbalancer/etc/datastore-balance.cfg
+
+- name: Chown root:opsview /opt/opsview/loadbalancer/etc/datastore-balance.cfg
+  file:
+    path: /opt/opsview/loadbalancer/etc/datastore-balance.cfg
+    owner: root
+    group: opsview
+    mode: '640'

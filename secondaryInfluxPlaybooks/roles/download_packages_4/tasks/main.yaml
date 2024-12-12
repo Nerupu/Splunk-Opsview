@@ -1,0 +1,43 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Pip install botocore
+  pip:
+    name: botocore
+    state: present
+
+- name: Pip install boto3
+  pip:
+    name: boto3
+    state: present
+
+- name: Get influxdb
+  amazon.aws.aws_s3:
+    bucket: "{{ lookup('env', 'S3_BUCKET_NAME') }}"
+    mode: get
+    object: influx/influxdb-1.8.2.x86_64.rpm
+    dest: /tmp/influxdb-1.8.2.x86_64.rpm
+  register: getresult
+
+- debug: 
+    msg="{{ getresult.msg }}" 
+  when: getresult.changed
+
+- name: Get influxdb-relay
+  amazon.aws.aws_s3:
+    bucket: "{{ lookup('env', 'S3_BUCKET_NAME') }}"
+    mode: get
+    object: influx/influxdb-relay-0.1.0.x86_64.rpm
+    dest: /tmp/influxdb-relay-0.1.0.x86_64.rpm
+  register: getresult
+
+- debug: 
+    msg="{{ getresult.msg }}" 
+  when: getresult.changed
+
+- name: Rpm packages
+  yum:
+    name: /tmp/influxdb-1.8.2.x86_64.rpm,/tmp/influxdb-relay-0.1.0.x86_64.rpm
+    state: present
+    allow_downgrade: yes
+    disable_gpg_check: yes

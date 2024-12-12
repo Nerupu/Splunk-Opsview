@@ -1,0 +1,8 @@
+[[http]]
+name = "ts-http"
+bind-addr = "0.0.0.0:9096"
+default-retention-policy = "autogen"
+output = [
+    { name="PRIMARY", location = "http://{{prim_influx[0].ip}}:8086/write", buffer-size-mb = 100 },
+    { name="DR", location = "http://{{sec_influx[0].ip}}:8086/write", buffer-size-mb = 100 },
+]

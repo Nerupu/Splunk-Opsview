@@ -1,0 +1,10 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Modify /opt/opsview/deploy/etc/user_vars.yml with new user_vars_v2.yml.j2
+  template:
+    src: user_vars_v2.yml.j2
+    dest: /opt/opsview/deploy/etc/user_vars.yml
+    owner: opsview
+    group: opsview
+    mode: 0644

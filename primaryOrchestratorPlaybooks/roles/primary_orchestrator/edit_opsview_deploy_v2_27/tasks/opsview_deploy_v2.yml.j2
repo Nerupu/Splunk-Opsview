@@ -1,0 +1,62 @@
+---
+orchestrator_hosts:
+  {{ primary_orch_hostname }}:
+    ip: {{ prim_orch[0].ip }}
+    vars:
+       opsview_loadbalancer_ignore_services:
+        - datastore-balance
+        - messagequeue-balance
+        - messagequeue-management-balance
+ 
+orchestrator_other_hosts:
+  {{secondary_orch_hostname}}:
+    ip: {{ sec_orch[0].ip }}
+    vars:
+      opsview_monitoring_ignore_host_templates: &dr_host_templates_ignore
+        - 'Opsview - Component - Machine Stats'
+ 
+datastore_hosts:
+  {{ primary_orch_hostname }}:
+    ip: {{ prim_orch[0].ip }}
+    vars:
+      opsview_datastore_primary_node: '{{ '{{ inventory_hostname }}' }}'
+      opsview_loadbalancer_ignore_services:
+        - datastore-balance
+  {{secondary_orch_hostname}}:
+    ip: {{ sec_orch[0].ip }}
+    vars:
+      opsview_monitoring_ignore_host_templates: *dr_host_templates_ignore
+      opsview_datastore_primary_node: '{{ '{{ inventory_hostname }}' }}'
+      opsview_loadbalancer_ignore_services: &dr_ignore_services
+        - cache-manager-balance
+        - collector-datastore-balance
+        - collector-messagequeue-balance
+        - collector-messagequeue-management-balance
+        - database-access
+        - database-balance
+        - datastore-access
+        - datastore-balance
+        - messagequeue-access
+        - messagequeue-balance
+        - messagequeue-management-access
+        - messagequeue-management-balance
+        - registry-access
+        - registry-balance
+        - timeseries-access
+        - timeseries-balance
+
+messagequeue_hosts:
+  {{ primary_orch_hostname }}:
+    ip: {{ prim_orch[0].ip }}
+    vars:
+      opsview_monitoring_messagequeue_node_name: 'rabbit@127.0.0.1'
+      opsview_loadbalancer_ignore_services: *dr_ignore_services
+
+pki_hosts:
+  {{ primary_orch_hostname }}:
+    ip: {{ prim_orch[0].ip }}
+    vars:
+      opsview_monitoring_ignore_host_templates: *dr_host_templates_ignore
+      opsview_loadbalancer_ignore_services: *dr_ignore_services
+
+database_hosts: {}

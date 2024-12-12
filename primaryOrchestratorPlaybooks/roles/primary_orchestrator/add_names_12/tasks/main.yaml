@@ -1,0 +1,8 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Change lines in core_post_install.yml and core_configure.yml
+  command: |
+    sed -i -e '/opsview_core_database_root_password/a\    -u {% raw %}"{{ opsview_core_database_root_username | default("root") }}"{% endraw %}' \
+    /opt/opsview/deploy/lib/roles/opsview_core/tasks/core_post_install.yml \
+    /opt/opsview/deploy/lib/roles/opsview_core/tasks/core_configure.yml

@@ -1,0 +1,10 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Create /opt/opsview/coreutils/bin/sync_drnodes with sync_drnodes.j2
+  template:
+    src: sync_drnodes.j2
+    dest: /opt/opsview/coreutils/bin/sync_drnodes
+    owner: root
+    group: opsview
+    mode: '0655'

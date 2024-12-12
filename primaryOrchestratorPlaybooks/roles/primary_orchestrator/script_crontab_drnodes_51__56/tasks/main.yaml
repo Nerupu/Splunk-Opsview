@@ -1,0 +1,126 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+
+# 51: On the PRIMARY orchestrator add entries to the root crontab
+#   crontab -e
+# ===
+# #*/5 * * * * /opt/opsview/coreutils/bin/sync_drnodes
+# @reboot crontab -u opsview /opt/opsview/coreutils/etc/opsview.crontab.dr
+# @reboot crontab -u root /opt/opsview/coreutils/etc/root.crontab.dr
+# ===
+
+- name: Add sync_drnodes to root crontab
+  cron:
+    name: sync_drnodes
+    user: root
+    job: /opt/opsview/coreutils/bin/sync_drnodes
+    state: present
+    cron_file: /etc/cron.d/sync_drnodes
+
+- name: Add opsview.crontab.dr to opsview crontab
+  cron:
+    name: opsview.crontab.dr
+    user: opsview
+    job: /opt/opsview/coreutils/etc/opsview.crontab.dr
+    state: present
+    cron_file: /etc/cron.d/opsview.crontab.dr
+
+- name: Add root.crontab.dr to root crontab
+  cron:
+    name: root.crontab.dr
+    user: root
+    job: /opt/opsview/coreutils/etc/root.crontab.dr
+    state: present
+    cron_file: /etc/cron.d/root.crontab.dr
+
+# 52: On the PRIMARY orchestrator as root create a file containing the root crontab and amend the permissions
+#   crontab -l > /opt/opsview/coreutils/etc/root.crontab.dr
+#   chgrp opsview /opt/opsview/coreutils/etc/root.crontab.dr
+#   chmod g+r /opt/opsview/coreutils/etc/root.crontab.dr
+
+- name: Create /opt/opsview/coreutils/etc/root.crontab.dr
+  shell: crontab -l > /opt/opsview/coreutils/etc/root.crontab.dr
+  args:
+    executable: /bin/bash
+
+- name: Change group of /opt/opsview/coreutils/etc/root.crontab.dr to opsview 
+  file:
+    path: /opt/opsview/coreutils/etc/root.crontab.dr
+    group: opsview
+
+- name: Change mode of /opt/opsview/coreutils/etc/root.crontab.dr to g+r
+  file:
+    path: /opt/opsview/coreutils/etc/root.crontab.dr
+    mode: '0640'
+
+# 53: On the PRIMARY orchestrator copy the DR root crontab file and amend
+#   cp /opt/opsview/coreutils/etc/root.crontab.dr /opt/opsview/coreutils/etc/root.crontab
+#   sed -i 's/^#\*/*/g' /opt/opsview/coreutils/etc/root.crontab
+
+- name: Copy /opt/opsview/coreutils/etc/root.crontab.dr to /opt/opsview/coreutils/etc/root.crontab
+  copy:
+    src: /opt/opsview/coreutils/etc/root.crontab.dr
+    dest: /opt/opsview/coreutils/etc/root.crontab
+    owner: root
+    group: opsview
+    mode: '0640'
+
+- name: Replace
+  replace:
+    path: /opt/opsview/coreutils/etc/root.crontab
+    regexp: '^#\*'
+    replace: '*'
+
+- name: Save /opt/opsview/coreutils/etc/root.crontab to variable
+  slurp:
+    src: /opt/opsview/coreutils/etc/root.crontab
+  register: root_crontab
+
+- name: Save /opt/opsview/coreutils/etc/root.crontab.dr to variable
+  slurp:
+    src: /opt/opsview/coreutils/etc/root.crontab.dr
+  register: root_crontab_dr
+
+# 55: On the PRIMARY orchestrator download and install the DR opspacks
+#   wget https://downloads.opsview.com/opsview-support/opsview-component-disaster-recovery-status.tar.gz
+#   wget https://downloads.opsview.com/opsview-support/opsview-component-disaster-recovery-nodes.tar.gz
+#   /opt/opsview/coreutils/bin/install_opspack -f ./opsview-component-disaster-recovery-nodes.opspack
+#   /opt/opsview/coreutils/bin/install_opspack -f ./opsview-component-disaster-recovery-status.opspack
+
+- name: Download opsview-component-disaster-recovery-status.tar.gz
+  get_url:
+    url: https://downloads.opsview.com/opsview-support/opsview-component-disaster-recovery-status.tar.gz
+    dest: /tmp/opsview-component-disaster-recovery-status.tar.gz
+    mode: '0644'
+
+- name: Download opsview-component-disaster-recovery-nodes.tar.gz
+  get_url:
+    url: https://downloads.opsview.com/opsview-support/opsview-component-disaster-recovery-nodes.tar.gz
+    dest: /tmp/opsview-component-disaster-recovery-nodes.tar.gz
+    mode: '0644'
+
+- name: Install opsview-component-disaster-recovery-nodes.opspack
+  shell: /opt/opsview/coreutils/bin/install_opspack -f /tmp/opsview-component-disaster-recovery-nodes.tar.gz
+  args:
+    executable: /bin/bash
+
+- name: Install opsview-component-disaster-recovery-status.opspack
+  shell: /opt/opsview/coreutils/bin/install_opspack -f /tmp/opsview-component-disaster-recovery-status.tar.gz
+  args:
+    executable: /bin/bash
+
+# 56: On the PRIMARY orchestrator synchronise all plugins
+#   rsync -Pavz  /opt/opsview/monitoringscripts/plugins/ ORCHSEC:/opt/opsview/monitoringscripts/plugins
+
+- name: Synchronise plugins
+  synchronize:
+    src: /opt/opsview/monitoringscripts/plugins/
+    dest: root@{{ sec_orch[0].ip }}:/opt/opsview/monitoringscripts/plugins/
+    mode: push
+    rsync_opts:
+      - "--archive"
+      - "--verbose"
+      - "--compress"
+      - "--partial"
+      - "--progress"

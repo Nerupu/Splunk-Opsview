@@ -1,0 +1,18 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Read /opt/opsview/deploy/etc/user_secrets.yml file
+  command: cat /opt/opsview/deploy/etc/user_secrets.yml
+  register: user_secrets_output
+
+- name: Save /opt/opsview/deploy/etc/user_sercrets.yml into variable user_secrets_content
+  set_fact:
+    user_secrets_content: "{{ user_secrets_output.stdout }}"
+
+- name: Read /opt/opsview/deploy/etc/user_vars.yml file
+  command: cat /opt/opsview/deploy/etc/user_vars.yml
+  register: user_vars_output
+
+- name: Save /opt/opsview/deploy/etc/user_vars.yml into variable user_vars_content  
+  set_fact:
+    user_vars_content: "{{ user_vars_output.stdout }}"
