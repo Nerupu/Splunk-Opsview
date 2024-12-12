@@ -1,0 +1,128 @@
+{
+    "aws_region": "us-east-1",
+    "account_id": "777506782670",
+    "kms_key_id": "7902119e-6009-45d5-a26f-f581733d03b1",
+    "rds_config": {
+        "tags": {
+            "environment": "dev",
+            "product": "opsview",
+            "application": "opsview",
+            "ccp_managed": "core",
+            "compliance": "test",
+            "data_residency": "eea",
+            "instance": "uk",
+            "business_unit": "test1"
+        },
+        "subnet_id": "subnet-0aaf6e33f38ed03fb"
+    },
+    "instances_list": [
+        {
+            "vm_instance_type": "t2.small",
+            "vm_ami_name": "CCP Hardened Amazon Linux 2",
+            "vm_instance_profile": "SSMInstanceProfile",
+            "vm_worker_type": "orchestrator",
+            "vm_sg_list": [
+                "sg-09b026728099dfc5f"
+            ],
+            "vm_tags": {
+                "environment": "dev",
+                "product": "opsview",
+                "application": "opsview",
+                "ccp_managed": "core",
+                "compliance": "test",
+                "data_residency": "eea",
+                "instance": "uk",
+                "business_unit": "test1"
+            },
+            "vm_subnet": "subnet-0aaf6e33f38ed03fb",
+            "vm_name": "uswaa-eafoord01",
+            "root_volume": {
+                "volume_size": "20",
+                "volume_type": "gp3",
+                "delete_on_termination": "true"
+            },
+            "data_volumes": {}
+        },
+        {
+            "vm_instance_type": "t2.small",
+            "vm_ami_name": "CCP Hardened Amazon Linux 2",
+            "vm_instance_profile": "SSMInstanceProfile",
+            "vm_worker_type": "stepping_stone",
+            "vm_sg_list": [
+                "sg-0a879999e1c22650f"
+            ],
+            "vm_tags": {
+                "environment": "dev",
+                "product": "opsview",
+                "application": "opsview",
+                "ccp_managed": "core",
+                "compliance": "test",
+                "data_residency": "eea",
+                "instance": "uk",
+                "business_unit": "test1"
+            },
+            "vm_subnet": "subnet-0aaf6e33f38ed03fb",
+            "vm_name": "uswaa-eafostd01",
+            "root_volume": {
+                "volume_size": "20",
+                "volume_type": "gp3",
+                "delete_on_termination": "true"
+            },
+            "data_volumes": {}
+        },
+        {
+            "vm_instance_type": "t2.small",
+            "vm_ami_name": "CCP Hardened Amazon Linux 2",
+            "vm_instance_profile": "SSMInstanceProfile",
+            "vm_worker_type": "influx_database",
+            "vm_sg_list": [
+                "sg-0d8bf6928f8b82334"
+            ],
+            "vm_tags": {
+                "environment": "dev",
+                "product": "opsview",
+                "application": "opsview",
+                "ccp_managed": "core",
+                "compliance": "test",
+                "data_residency": "eea",
+                "instance": "uk",
+                "business_unit": "test1"
+            },
+            "vm_subnet": "subnet-0aaf6e33f38ed03fb",
+            "vm_name": "uswaa-eafoind01",
+            "root_volume": {
+                "volume_size": "20",
+                "volume_type": "gp3",
+                "delete_on_termination": "true"
+            },
+            "data_volumes": {}
+        },
+        {
+            "vm_instance_type": "t2.small",
+            "vm_ami_name": "CCP Hardened Amazon Linux 2",
+            "vm_instance_profile": "SSMInstanceProfile",
+            "vm_worker_type": "rds_database",
+            "vm_sg_list": [
+                "sg-0f8995efc626a2e70"
+            ],
+            "vm_tags": {
+                "environment": "dev",
+                "product": "opsview",
+                "application": "opsview",
+                "ccp_managed": "core",
+                "compliance": "test",
+                "data_residency": "eea",
+                "instance": "uk",
+                "business_unit": "test1"
+            },
+            "vm_subnet": "subnet-0aaf6e33f38ed03fb",
+            "vm_name": "uswaa-eafordd01",
+            "root_volume": {
+                "volume_size": "20",
+                "volume_type": "gp3",
+                "delete_on_termination": "true"
+            },
+            "data_volumes": {}
+        }
+    ]
+}
