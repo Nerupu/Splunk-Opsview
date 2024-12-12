@@ -1,0 +1,9 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Save hostname of secondary orchestrator to variable
+  command: hostname
+  register: secondary_orch_hostname
+
+- name: Save hostname of secondary orchestrator to variable 
+  set_fact: secondary_orch_hostname="{{ secondary_orch_hostname.stdout }}"

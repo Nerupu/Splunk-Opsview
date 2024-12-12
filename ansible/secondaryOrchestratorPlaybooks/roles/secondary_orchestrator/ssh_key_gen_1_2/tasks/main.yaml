@@ -1,0 +1,33 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Delete 'PermitRootLogin no' line if exists and add 'PermitRootLogin yes' line
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    regexp: '^PermitRootLogin no'
+    line: 'PermitRootLogin yes'
+
+- name: Check if id_rsa.pub exists
+  stat:
+    path: ~/.ssh/id_rsa.pub
+  register: ssh_key_exist
+  
+- name: Generate SSH key pair
+  command: ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+  when: not ssh_key_exist.stat.exists
+
+- name: Read id_rsa.pub
+  command: cat ~/.ssh/id_rsa.pub
+  register: id_rsa_pub_output
+  
+- name: Save id_rsa.pub to variable
+  set_fact:
+    id_rsa_pub_content_secondary: "{{ id_rsa_pub_output.stdout }}"
+
+- name: Save id_rsa.pub to authorized_keys
+  lineinfile:
+    dest: ~/.ssh/authorized_keys
+    line: "{{ id_rsa_pub_content_secondary }}"
+    create: yes
+    state: present

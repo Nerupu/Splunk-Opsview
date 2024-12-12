@@ -1,0 +1,12 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Add check_opsview_running to root crontab
+  cron:
+    name: check_opsview_running
+    user: root
+    job: /opt/opsview/coreutils/bin/check_opsview_running
+    state: present
+    cron_file: /etc/cron.d/check_opsview_running
+
+

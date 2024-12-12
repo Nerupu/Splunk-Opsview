@@ -1,0 +1,11 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Save find_files_content into separate files into /opt/opsview/deploy/etc/
+  copy:
+    dest: /opt/opsview/deploy/etc/{{ item.filename }}
+    content: "{{ item.content }}"
+    owner: opsviewdeploy
+    group: opsviewdeploy
+    mode: '0600'
+  loop: "{{ find_files_content }}"

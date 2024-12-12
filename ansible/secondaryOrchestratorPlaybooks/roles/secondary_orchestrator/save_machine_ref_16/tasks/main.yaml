@@ -1,0 +1,10 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Save machine_ref_content into file
+  copy:
+    content: "{{ machine_ref_content }}"
+    dest: /opt/opsview/var/machine.ref
+    owner: opsviewdeploy
+    group: opsviewdeploy
+    mode: '0644'

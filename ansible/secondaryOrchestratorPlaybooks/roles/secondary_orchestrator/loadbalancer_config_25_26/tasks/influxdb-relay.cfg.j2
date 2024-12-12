@@ -1,0 +1,20 @@
+frontend influxdb-acceess
+    bind 0.0.0.0:7086
+    mode http
+    acl write_queries path_sub -i write
+    use_backend influxdb-relay if write_queries
+    default_backend influxdb
+  
+backend influxdb-relay
+    mode http
+    option forwardfor
+    option httpclose
+    server {{secondary_influx_hostname}} {{sec_influx[0].dns}}:9096 check
+  
+backend influxdb
+    mode http
+    option forwardfor
+    option httpclose
+    balance roundrobin
+    server {{priamry_influx_hostname}} {{prim_influx[0].dns}}:8086 check
+    server {{secondary_influx_hostname}} {{sec_influx[0].dns}}:8086 check

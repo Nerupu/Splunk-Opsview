@@ -1,0 +1,5 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Configure datastore replication  
+  command: crontab -u opsview /opt/opsview/coreutils/etc/opsview.crontab.dr

@@ -1,0 +1,18 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Save root_crontab into file
+  copy:
+    content: "{{ root_crontab }}"
+    dest: /opt/opsview/coreutils/etc/root.crontab
+    owner: root
+    group: opsview
+    mode: '0640'
+
+- name: Save root_crontab_dr into file
+  copy:
+    content: "{{ root_crontab_dr }}"
+    dest: /opt/opsview/coreutils/etc/root.crontab.dr
+    owner: root
+    group: opsview
+    mode: '0640'

@@ -1,0 +1,28 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Create /opt/opsview/loadbalancer/etc/influxdb-relay.cfg 
+  template:
+    src: influxdb-relay.cfg.j2
+    dest: /opt/opsview/loadbalancer/etc/influxdb-relay.cfg
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Chown root:opsview /opt/opsview/loadbalancer/etc/influxdb-relay.cfg
+  file:
+    path: /opt/opsview/loadbalancer/etc/influxdb-relay.cfg
+    owner: root
+    group: opsview
+    mode: '640'
+
+- name: Restart loadbalancer
+  command: /opt/opsview/watchdog/bin/opsview-monit restart opsview-loadbalancer
+  register: loadbalancer_result
+  ignore_errors: true
+
+- name: Wait for loadbalancer to start
+  wait_for:
+    host: localhost
+    port: 7086
+    state: started

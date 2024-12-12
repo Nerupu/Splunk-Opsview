@@ -1,0 +1,10 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Edit /opt/opsview/deploy/etc/opsview_deploy.yml file using jinja template
+  template:
+    src: opsview_deploy.yml.j2
+    dest: /opt/opsview/deploy/etc/opsview_deploy.yml
+    owner: opsviewdeploy
+    group: opsviewdeploy
+    mode: '0644'

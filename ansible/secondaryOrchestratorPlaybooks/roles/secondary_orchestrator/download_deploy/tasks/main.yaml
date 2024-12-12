@@ -1,0 +1,18 @@
+---
+- set_fact: ansible_aws_ssm_instance_id="{{ item.id }}"
+
+- name: Create directory for opsview deploy script
+  file:
+    path: /temp
+    state: directory
+    mode: 0777
+
+- name: Download opsview deploy script with open permisisons
+  get_url:
+    url: https://deploy.opsview.com/6
+    dest: /temp/opsview-deploy.sh
+    mode: 0777
+
+- name: Run opsview deploy script as a root user
+  command: bash /temp/opsview-deploy.sh -A boot
+  become: true

@@ -1,0 +1,34 @@
+{% raw %} 
+#!/bin/bash
+
+# Hostnames as per the 'hostname' command
+nodes=( "ORCHPRI" "ORCHSEC" )
+
+# User that has ssh and sudo access on the remote host
+username=opsviewdeploy
+
+## Since this is run on reboot, wait a bit to allow services to start 
+sleep 60
+
+for remote_node in "${nodes[@]}"; do
+
+  if [[ "$remote_node" == "$(hostname)" ]]; then
+    continue
+  fi
+
+  node=$remote_node
+done
+
+logger -t check_opsview_running "Checking $node for running opsview services due to reboot"
+
+norunning=$(ssh $username@$node "sudo /opt/opsview/watchdog/bin/opsview-monit summary -B | grep Running | wc -l")
+
+if [[ -n "$norunning" ]]; then
+  if [[ $norunning -lt 5 ]]; then
+    logger -t check_opsview_running "Less then 5 processes running on counterpart node $node. Starting Opsview"
+    /opt/opsview/watchdog/bin/opsview-monit start all
+  fi
+else
+  logger -t check_opsview_running "Cannot connect to the counterpart node $node. Ignoring startup"
+fi
+{% endraw %} 
