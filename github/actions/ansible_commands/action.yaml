@@ -1,0 +1,62 @@
+name: 'Run ansible commands'
+description: 'Run ansible commands to set up and configure Splunk in VMs'
+inputs:
+  VAULT_PASS:
+    description: 'Vault password shoud be taken from secrets'
+    required: true
+
+  DEPLOYMENT_ENVIORNMENT:
+    description: 'Deployment Env of Infra. Expected values are ''development'', ''sandpit'', ''production'''
+    default: 'sandpit'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Ansible
+      shell: bash
+      run: |
+        pip3 install jmespath boto3
+        python3 -m pip install --user ansible-core==2.14.2
+        ansible-galaxy collection install community.aws
+        ansible-galaxy collection install community.general
+        ansible-galaxy collection install ansible.posix
+
+
+    - name: Version check
+      shell: bash
+      run: |
+        ansible --version
+        pip3 list
+        pip list
+        python -V
+        python3 -V
+        which python
+        which python3
+
+    - name: Set the Private Certificate Authority Cert and Chain
+      working-directory: ${{ github.workspace }}/ansible
+      shell: bash
+      run: |
+       aws acm-pca get-certificate-authority-certificate --certificate-authority-arn ${{ env.ANSIBLE_CA_CERT_ARN }} --region ${{ env.AWS_REGION }} --output json --no-paginate | jq -r .Certificate > cacrt.pem
+       aws acm-pca get-certificate-authority-certificate --certificate-authority-arn ${{ env.ANSIBLE_CA_CERT_ARN }} --region ${{ env.AWS_REGION }} --output json --no-paginate | jq -r .CertificateChain > cacrtchain.pem
+
+    - name: Get GitHub role ARN from input json
+      working-directory: ${{ github.workspace }}/scripts/json_configurations
+      shell: bash
+      run: |
+        region=$(jq -r '.general_parameters.aws_region' config.json)
+        account_id=$(jq -r '.general_parameters.account_id' config.json)
+        echo "The AWS region is: $region"
+        echo "AWS_REGION=$region" >> $GITHUB_ENV
+
+
+    - name: Run Ansible commands
+      working-directory: ${{ github.workspace }}/ansible
+      shell: bash
+      run: |
+        set -e
+        ENVIRONMENT='${{ inputs.DEPLOYMENT_ENVIORNMENT }}'
+        ENVIRONMENT_DIRECTORY=env/$ENVIRONMENT
+        ls -lrt ${{ github.workspace }}/ansible/${ENVIRONMENT_DIRECTORY}/main.yaml
+        echo
+        ansible-playbook -i $ENVIRONMENT_DIRECTORY site.yaml

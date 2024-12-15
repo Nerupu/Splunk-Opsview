@@ -1,0 +1,106 @@
+name: Deploy OpsView
+run-name: Deploy OpsView
+on: 
+  workflow_dispatch:
+    inputs:
+      SAVE_INFRASTRUCTURE_STATE:
+        description: 'Save infrastructure. Choose ''Save'' if you want to save the infrastructude (terraform.tfstate) to the GitHub repository. Choose ''Do not save'' if you do not want to save the infrastructure state to the GitHub repository.'
+        required: true
+        default: 'Save'
+        type: choice
+        options:
+        - Save
+        - Do not save
+      DRY_RUN:
+        description: 'Dry run. Choose ''Yes'' if you do not want to deploy infrastructure. Choose ''No'' if you want to deploy infrastructure.'
+        required: true
+        default: 'Yes'
+        type: choice
+        options:
+        - 'Yes'
+        - 'No'
+
+      # Destroy_Infra:
+      #   description: 'Destroy Infrastructure. Choose ''Yes'' if you want to destroy the deployed infrastructure. Choose ''No'' if you want to keep the infrastructure.'
+      #   required: true
+      #   default: 'Yes'
+      #   type: choice
+      #   options:
+      #     - 'Yes'
+      #     - 'No'
+
+
+      DEPLOYMENT_ENVIRONMENT:
+        description: 'Deployment Env of Infra. Expected values are ''development'', ''test'', ''production'', ''sandpit'''
+        default: 'sandpit'
+        type: choice
+        options:
+        - 'development'
+        - 'test'
+        - 'production'
+        - 'sandpit'
+
+      DEPLOYMENT_Architectures:
+        description: 'Deployment Env of Architectures. Expected values are ''Single'', ''Distributed'', ''Clustered'',''Multi-site'''
+        default : 'Clustered'
+        type: choice
+        options:
+          - Clustered
+          - Single
+          - Distributed
+          - Multi-sitez
+
+      DEPLOYMENT_ENV_IS_TEST:
+        description: 'Set to true if deploying to test environment.'
+        default: false
+        type: boolean
+
+      JSON_CONFIGURATION_STRING:
+        description: 'Input field for JSON string. If empty default config will be used. For more information see README.md.'
+        default: ''
+        type: string
+    
+
+      
+      
+jobs:
+  Deploy-OpsView:
+    runs-on: ubuntu-latest
+    # needs: set-up-environment
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up environment
+        uses: ./.github/actions/setup_environment
+        with:
+          JSON_STRING: ${{ inputs.JSON_CONFIGURATION_STRING }}
+          DEPLOYMENT_ENVIRONMENT: ${{ inputs.DEPLOYMENT_ENVIRONMENT }}
+
+      - name: Terraform commands
+        uses: ./.github/actions/terraform_commands
+        with:
+          DRY_RUN: ${{ inputs.DRY_RUN }}
+          SAVE_INFRASTRUCTURE_STATE: ${{ inputs.SAVE_INFRASTRUCTURE_STATE }}
+          DEPLOYMENT_ENVIRONMENT: ${{ inputs.DEPLOYMENT_ENVIRONMENT }}
+          # Destroy_Infra : ${{inputs.Destroy_Infra}}
+
+      - name: Apply ansible commands
+        uses: ./.github/actions/ansible_commands
+        if: ${{ inputs.DRY_RUN == 'No' }}
+        env:
+          OPSVIEW_LICENCE_KEY: ${{ secrets.OPSVIEW_LICENCE_KEY }}
+        with: 
+          DEPLOYMENT_ENVIORNMENT: ${{ inputs.DEPLOYMENT_ENVIRONMENT }}
+
+
+      
+      
+      
+
+      
+
+  
+          
